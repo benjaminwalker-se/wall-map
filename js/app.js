@@ -20,15 +20,20 @@
   WallMapRender.legend();
 
   let groups = [];
+  let timer = null;
 
   async function refresh() {
+    let failed = [];
     try {
       setStatus("Loading…");
       const rows = await WallMapData.load(source, cfg.people);
       groups = WallMapData.groupByPlace(rows);
-      await WallMapGeocode.resolveAll(groups, (n, total) => setStatus(`Geocoding ${n}/${total}…`));
+      await WallMapGeocode.resolveAll(groups, (n, total, g) => {
+        setStatus(`Geocoding ${n}/${total}…`);
+        if (g.coords) WallMapRender.draw(groups);
+      });
       WallMapRender.draw(groups);
-      const failed = groups.filter((g) => !g.coords);
+      failed = groups.filter((g) => !g.coords);
       setStatus(
         `${rows.length} visits · ${groups.length} places · updated ${new Date().toLocaleTimeString([], { timeStyle: "short" })}` +
         (failed.length ? ` · ${failed.length} not found: ${failed.map((f) => f.place).join(", ")}` : ""),
@@ -37,11 +42,15 @@
     } catch (e) {
       console.error(e);
       setStatus(e.message, true);
+      failed = [e];
     }
+    // Retry soon while anything is unresolved (e.g. geocoder throttling on a fresh Pi).
+    const minutes = failed.length ? 1 : Math.max(1, cfg.refreshMinutes);
+    clearTimeout(timer);
+    timer = setTimeout(refresh, minutes * 60 * 1000);
   }
 
   await refresh();
-  setInterval(refresh, Math.max(1, cfg.refreshMinutes) * 60 * 1000);
 
   // Ticker: cycle through places, most recent first.
   if (cfg.tickerSeconds > 0) {
