@@ -19,7 +19,7 @@ main() {
 #!/usr/bin/env bash
 pgrep -f -- "--kiosk.*wall-map" >/dev/null && exit 0
 until ping -c1 -W1 github.com >/dev/null 2>&1; do sleep 2; done
-exec $CHROMIUM --kiosk --noerrdialogs --disable-infobars --disable-session-crashed-bubble \\
+exec $CHROMIUM --kiosk --ozone-platform=wayland --password-store=basic --noerrdialogs --disable-infobars --disable-session-crashed-bubble \\
   --check-for-update-interval=31536000 --start-fullscreen "$URL"
 EOF
   chmod +x "$HOME/kiosk.sh"
