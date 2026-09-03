@@ -65,6 +65,7 @@ window.WallMapRender = (() => {
       .attr("d", (d) => path(d.feature))
       .attr("fill", (d) => colorFor(d.who))
       .attr("fill-opacity", (d) => opacityFor(d.lastDate) * 0.55)
+      .classed("upcoming", (d) => d.upcoming)
       .attr("stroke", (d) => colorFor(d.who))
       .attr("stroke-width", 0.8);
 
@@ -83,6 +84,7 @@ window.WallMapRender = (() => {
     );
     marks.attr("transform", (d) => `translate(${projection(d.coords)})`);
     marks.select("circle")
+      .classed("upcoming", (d) => d.upcoming)
       .attr("r", (d) => r(d.count))
       .attr("fill", (d) => colorFor(d.who))
       .attr("fill-opacity", (d) => opacityFor(d.lastDate));
@@ -95,7 +97,7 @@ window.WallMapRender = (() => {
   function legend() {
     const rows = Object.values(cfg.people).map((p) => `<div class="row"><span class="swatch" style="background:${p.color}"></span>${p.label}</div>`);
     rows.push(`<div class="row"><span class="swatch" style="background:${colorFor("both")}"></span>${cfg.bothLabel}</div>`);
-    rows.push(`<div class="hint">brighter = more recent · bigger = more visits</div>`);
+    rows.push(`<div class="hint">brighter = more recent · bigger = more visits · dashed = upcoming</div>`);
     d3.select("#legend").html(rows.join(""));
   }
 

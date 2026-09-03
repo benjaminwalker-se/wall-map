@@ -24,7 +24,7 @@
   async function refresh() {
     try {
       setStatus("Loading…");
-      const rows = await WallMapData.load(source);
+      const rows = await WallMapData.load(source, cfg.people);
       groups = WallMapData.groupByPlace(rows);
       await WallMapGeocode.resolveAll(groups, (n, total) => setStatus(`Geocoding ${n}/${total}…`));
       WallMapRender.draw(groups);
@@ -46,7 +46,8 @@
   // Ticker: cycle through places, most recent first.
   if (cfg.tickerSeconds > 0) {
     let i = 0;
-    const fmt = (d) => d ? d.toLocaleDateString([], { year: "numeric", month: "short" }) : "";
+    const fmt = (d) => d ? d.toLocaleDateString([], { year: "numeric", month: "short", day: "numeric" }) : "";
+    const range = (v) => v.date ? (v.departure ? `${fmt(v.date)} – ${fmt(v.departure)}` : fmt(v.date)) : "";
     const tick = () => {
       const list = groups.filter((g) => g.coords).sort((a, b) => (b.lastDate?.getTime() || 0) - (a.lastDate?.getTime() || 0));
       if (!list.length) return;
@@ -55,7 +56,7 @@
       const last = g.visits[0];
       d3.select("#ticker").html(
         `<div class="place" style="color:${WallMapRender.colorFor(g.who)}">${g.place}</div>` +
-        `<div class="meta">${who} · ${g.count} visit${g.count > 1 ? "s" : ""}${g.lastDate ? " · last " + fmt(g.lastDate) : ""}` +
+        `<div class="meta">${who} · ${g.count} visit${g.count > 1 ? "s" : ""}${last?.date ? ` · ${g.upcoming ? "upcoming" : "last"} ${range(last)}` : ""}` +
         `${last?.notes ? " · " + last.notes : ""}</div>`
       );
     };

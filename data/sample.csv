@@ -1,19 +1,19 @@
-place,who,date,notes,lat,lng
-"Paris, France",both,2024-06,Anniversary,48.8566,2.3522
-"Paris, France",partner,2019-03,Work trip,48.8566,2.3522
-"Tokyo, Japan",ben,2023-11,,35.6762,139.6503
-"Lisbon, Portugal",both,2022-09,,38.7223,-9.1393
-"Mexico City, Mexico",both,2025-02,Tacos,19.4326,-99.1332
-"Chicago, IL",ben,2021-05,,41.8781,-87.6298
-"Chicago, IL",ben,2023-05,,41.8781,-87.6298
-"Chicago, IL",ben,2025-05,Annual conference,41.8781,-87.6298
-"Vancouver, Canada",partner,2018-08,,49.2827,-123.1207
-"Cape Town, South Africa",both,2017-12,,-33.9249,18.4241
-"Sydney, Australia",partner,2016-01,,-33.8688,151.2093
-"Reykjavik, Iceland",both,2025-07,Northern lights,64.1466,-21.9426
-Oregon,both,2024-08,Road trip,,
-Colorado,ben,2022-01,Skiing,,
-Vermont,partner,2020-10,,,
-Italy,both,2023-06,,,
-Japan,ben,2023-11,,,
-Thailand,partner,2015-02,,,
+place,who,arrival date,departure date,notes,lat,lng
+"Paris, France",both,2024-06,,Anniversary,48.8566,2.3522
+"Paris, France",kevin,2019-03,,Work trip,48.8566,2.3522
+"Tokyo, Japan",ben,2023-11,,,35.6762,139.6503
+"Lisbon, Portugal",both,2022-09,,,38.7223,-9.1393
+"Mexico City, Mexico",both,2025-02,,Tacos,19.4326,-99.1332
+"Chicago, IL",ben,2021-05,,,41.8781,-87.6298
+"Chicago, IL",ben,2023-05,,,41.8781,-87.6298
+"Chicago, IL",ben,2025-05,,Annual conference,41.8781,-87.6298
+"Vancouver, Canada",kevin,2018-08,,,49.2827,-123.1207
+"Cape Town, South Africa",both,2017-12,,,-33.9249,18.4241
+"Sydney, Australia",kevin,2016-01,,,-33.8688,151.2093
+"Reykjavik, Iceland",both,2025-07,,Northern lights,64.1466,-21.9426
+Oregon,both,2024-08,,Road trip,,
+Colorado,ben,2022-01,,Skiing,,
+Vermont,kevin,2020-10,,,,
+Italy,both,2023-06,,,,
+Japan,ben,2023-11,,,,
+Thailand,kevin,2015-02,,,,

@@ -32,6 +32,7 @@ html, body {
   stroke: #ffffffaa;
   stroke-width: 1;
 }
+.upcoming { stroke-dasharray: 3 2; stroke-width: 1.5; }
 .visit-label {
   fill: var(--text);
   font-size: 12px;

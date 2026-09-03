@@ -9,16 +9,16 @@ Static site — no server, no build step. Hosted on GitHub Pages.
 
 Create a sheet with these columns in row 1 (order doesn't matter, extra columns are ignored):
 
-| place | who | date | notes | lat | lng | type |
-|---|---|---|---|---|---|---|
-| Paris, France | both | 2024-06 | Anniversary | | | |
-| Oregon | ben | 2024-08 | Road trip | | | |
-| Japan | partner | 2023 | | | | |
+| place | who | arrival date | departure date | notes | lat | lng | type |
+|---|---|---|---|---|---|---|---|
+| Paris, France | both | 6/14/2024 | 6/21/2024 | Anniversary | | | |
+| Oregon | ben | 2024-08 | | Road trip | | | |
+| Japan | kevin | 2023 | | | | | |
 
 - **place** — city (`"Lisbon, Portugal"`), US state (`"Vermont"`) or country (`"Italy"`).
   Countries and US states are recognised by name and shaded; anything else becomes a dot.
-- **who** — `ben`, `partner`, or `both` (keys are configurable in `config.js`).
-- **date** — `2024-06-14`, `2024-06`, `June 2024`, `2024`, or `6/14/2024`. Optional.
+- **who** — `ben`, `kevin`, or `both` (anything unrecognised counts as both; keys are configurable in `config.js`).
+- **arrival date / departure date** — `6/14/2024`, `2024-06-14`, `2024-06`, `June 2024`, or `2024`. Both optional; departure drives recency. Future arrivals are drawn dashed as upcoming trips.
 - **notes** — shown in the corner ticker. Optional.
 - **lat / lng** — optional. Skips geocoding for that row (useful for ambiguous names).
 - **type** — optional `city` / `state` / `country` to override auto-detection
@@ -37,7 +37,7 @@ Edit `config.js`:
 sheet: "https://docs.google.com/spreadsheets/d/e/.../pub?gid=0&single=true&output=csv",
 people: {
   ben:     { label: "Ben",     color: "#4cc9f0" },
-  partner: { label: "Partner", color: "#f72585" },
+  kevin:   { label: "Kevin",   color: "#f72585" },
 },
 ```
 

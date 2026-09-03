@@ -3,7 +3,7 @@
 window.WALL_MAP_CONFIG = {
   // Google Sheet published as CSV (File > Share > Publish to web > CSV).
   // Leave empty to load data/sample.csv (demo mode).
-  sheet: "",
+  sheet: "https://docs.google.com/spreadsheets/d/e/2PACX-1vRJxeIzCH0kqvNwbjJBYaaJtQjzR2pDYzhne8cJQlKZ42TFRB-gI7Ujjv4iRCZLZsGvQATBuPgIolG7/pub?output=csv",
 
   // How often to re-fetch the sheet, in minutes.
   refreshMinutes: 10,
@@ -12,7 +12,7 @@ window.WALL_MAP_CONFIG = {
   // "both" is drawn with a blend of the two colours.
   people: {
     ben: { label: "Ben", color: "#4cc9f0" },
-    partner: { label: "Partner", color: "#f72585" },
+    kevin: { label: "Kevin", color: "#f72585" },
   },
   bothLabel: "Both",
 
