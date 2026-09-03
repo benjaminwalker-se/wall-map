@@ -39,7 +39,7 @@ EOF
   grep -q kiosk.sh "$HOME/.config/labwc/autostart" || echo "$HOME/kiosk.sh &" >> "$HOME/.config/labwc/autostart"
 
   # Nightly reboot at 05:00 keeps the Pi 3 fresh and picks up app updates.
-  ( crontab -l 2>/dev/null | grep -v wallmap; echo "0 5 * * * sudo reboot # wallmap" ) | crontab -
+  ( crontab -l 2>/dev/null | grep -v wallmap || true; echo "0 5 * * * sudo reboot # wallmap" ) | crontab -
   echo "$USER ALL=(root) NOPASSWD: /usr/sbin/reboot" | sudo tee /etc/sudoers.d/wallmap-reboot >/dev/null
 
   # Never blank the screen; boot to desktop with auto-login.
