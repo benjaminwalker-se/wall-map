@@ -8,6 +8,8 @@ window.WallMapRender = (() => {
   };
 
   let svg, projection, path, layers, cfg;
+  let countryFeatures = [], stateFeatures = [];
+  const containerCache = new Map();
 
   function colorFor(who) {
     const keys = Object.keys(cfg.people);
@@ -23,6 +25,18 @@ window.WallMapRender = (() => {
     return cfg.minOpacity + (1 - cfg.minOpacity) * decay;
   }
 
+  // Fix ring winding so geoContains treats the polygon (not the rest of the sphere) as inside.
+  function rewind(feature) {
+    const fixRing = (ring, isHole) => {
+      const area = d3.geoArea({ type: "Polygon", coordinates: [ring] });
+      if ((area > 2 * Math.PI) !== isHole) ring.reverse();
+    };
+    const geom = feature.geometry;
+    const polys = geom.type === "Polygon" ? [geom.coordinates] : geom.type === "MultiPolygon" ? geom.coordinates : [];
+    for (const poly of polys) poly.forEach((ring, i) => fixRing(ring, i > 0));
+    return feature;
+  }
+
   function init(config, world, us) {
     cfg = config;
     svg = d3.select("#map");
@@ -32,12 +46,16 @@ window.WallMapRender = (() => {
       marks: svg.append("g").attr("class", "marks"),
     };
     const land = topojson.feature(world, world.objects.countries);
-    const states = us.features;
+    const states = us.features.map(rewind);
+    land.features.forEach(rewind);
 
     layers.base.append("path").datum({ type: "Sphere" }).attr("class", "sphere");
     layers.base.append("path").datum(d3.geoGraticule10()).attr("class", "graticule");
     layers.base.append("g").selectAll("path").data(land.features).join("path").attr("class", "land");
     layers.base.append("g").selectAll("path").data(states).join("path").attr("class", "state-border");
+
+    countryFeatures = land.features;
+    stateFeatures = states;
 
     resize();
     window.addEventListener("resize", () => { resize(); if (lastGroups) draw(lastGroups); });
@@ -55,18 +73,51 @@ window.WallMapRender = (() => {
 
   let lastGroups = null;
 
+  function nearestFeature(features, coords) {
+    let best = null, bestDist = Infinity;
+    for (const f of features) {
+      d3.geoStream(f, { point(x, y) { const d = d3.geoDistance(coords, [x, y]); if (d < bestDist) { bestDist = d; best = f; } },
+        lineStart() {}, lineEnd() {}, polygonStart() {}, polygonEnd() {}, sphere() {} });
+    }
+    return bestDist < 0.05 ? best : null; // ~3 degrees; keeps coastal cities inside their country
+  }
+
+  // The state (US) or country polygon that contains a point.
+  function containerFor(coords) {
+    const key = coords.join(",");
+    if (containerCache.has(key)) return containerCache.get(key);
+    let f = stateFeatures.find((s) => d3.geoContains(s, coords))
+      || countryFeatures.find((c) => d3.geoContains(c, coords))
+      || nearestFeature(stateFeatures, coords)
+      || nearestFeature(countryFeatures, coords);
+    containerCache.set(key, f || null);
+    return f || null;
+  }
+
+  // One entry per visited state/country, with the union of visitors.
+  function visitedRegions(groups) {
+    const byFeature = new Map();
+    for (const g of groups) {
+      const f = g.feature || containerFor(g.coords);
+      if (!f) continue;
+      if (!byFeature.has(f)) byFeature.set(f, { feature: f, whos: new Set(), key: (stateFeatures.includes(f) ? "state:" : "country:") + f.properties.name });
+      for (const v of g.visits) byFeature.get(f).whos.add(v.who);
+    }
+    return [...byFeature.values()].map((r) => ({ ...r, who: r.whos.size === 1 ? [...r.whos][0] : "both" }));
+  }
+
   function draw(groups) {
     lastGroups = groups;
     const placed = groups.filter((g) => g.coords);
 
-    const regions = placed.filter((g) => g.feature && cfg.fillRegions);
-    layers.regions.selectAll("path").data(regions, (d) => d.place).join("path")
-      .attr("class", (d) => `region ${d.type}`)
+    const regions = cfg.fillRegions ? visitedRegions(placed) : [];
+    layers.regions.selectAll("path").data(regions, (d) => d.key).join("path")
+      .attr("class", "region")
       .attr("d", (d) => path(d.feature))
       .attr("fill", (d) => colorFor(d.who))
-      .attr("fill-opacity", (d) => opacityFor(d.lastDate) * 0.55)
-      .classed("upcoming", (d) => d.upcoming)
+      .attr("fill-opacity", cfg.regionOpacity)
       .attr("stroke", (d) => colorFor(d.who))
+      .attr("stroke-opacity", Math.min(1, cfg.regionOpacity * 2.5))
       .attr("stroke-width", 0.8);
 
     const cities = placed.filter((g) => g.type === "city");
@@ -97,7 +148,7 @@ window.WallMapRender = (() => {
   function legend() {
     const rows = Object.values(cfg.people).map((p) => `<div class="row"><span class="swatch" style="background:${p.color}"></span>${p.label}</div>`);
     rows.push(`<div class="row"><span class="swatch" style="background:${colorFor("both")}"></span>${cfg.bothLabel}</div>`);
-    rows.push(`<div class="hint">brighter = more recent · bigger = more visits · dashed = upcoming</div>`);
+    rows.push(`<div class="hint">shaded = visited · brighter dot = more recent · bigger = more visits · dashed = upcoming</div>`);
     d3.select("#legend").html(rows.join(""));
   }
 

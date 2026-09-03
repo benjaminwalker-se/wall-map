@@ -28,8 +28,9 @@ window.WALL_MAP_CONFIG = {
   // Show city names next to dots.
   showLabels: true,
 
-  // Fill visited countries/states with the visitor's colour.
+  // Shade the whole US state / country a pale flat tint once it has any visit.
   fillRegions: true,
+  regionOpacity: 0.18,
 
   // Rotating "last visited" ticker in the corner (seconds per item; 0 to hide).
   tickerSeconds: 8,
