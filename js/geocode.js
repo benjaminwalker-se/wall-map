@@ -4,7 +4,9 @@
 window.WallMapGeocode = (() => {
   const CACHE_KEY = "wallmap.geocode.v1";
   const NOMINATIM = "https://nominatim.openstreetmap.org/search";
+  const PHOTON = "https://photon.komoot.io/api/";
   const MIN_INTERVAL_MS = 1100; // Nominatim policy: max 1 request/second
+  const MAX_ATTEMPTS = 3;
 
   const ALIASES = {
     usa: "united states of america", us: "united states of america",
@@ -41,20 +43,53 @@ window.WallMapGeocode = (() => {
     return null;
   }
 
-  async function nominatim(name) {
-    if (cache[name]) return cache[name];
+  const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+  async function throttledJson(url) {
     const wait = lastRequest + MIN_INTERVAL_MS - Date.now();
-    if (wait > 0) await new Promise((r) => setTimeout(r, wait));
+    if (wait > 0) await sleep(wait);
     lastRequest = Date.now();
-    const url = `${NOMINATIM}?format=jsonv2&limit=1&q=${encodeURIComponent(name)}`;
     const res = await fetch(url, { headers: { Accept: "application/json" } });
-    if (!res.ok) throw new Error(`Geocode failed for "${name}": ${res.status}`);
-    const hits = await res.json();
-    if (!hits.length) throw new Error(`No geocode result for "${name}"`);
-    const hit = hits[0];
-    cache[name] = { coords: [+hit.lon, +hit.lat], display: hit.display_name };
-    saveCache();
-    return cache[name];
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return res.json();
+  }
+
+  const PROVIDERS = [
+    async (name) => {
+      const hits = await throttledJson(`${NOMINATIM}?format=jsonv2&limit=1&q=${encodeURIComponent(name)}`);
+      if (!hits.length) return null;
+      return { coords: [+hits[0].lon, +hits[0].lat], display: hits[0].display_name };
+    },
+    async (name) => {
+      const { features } = await throttledJson(`${PHOTON}?limit=1&q=${encodeURIComponent(name)}`);
+      if (!features?.length) return null;
+      const f = features[0];
+      const p = f.properties;
+      return { coords: f.geometry.coordinates, display: [p.name, p.state, p.country].filter(Boolean).join(", ") };
+    },
+  ];
+
+  // Tries each provider in turn, with backoff on network/HTTP errors (the Pi
+  // often gets throttled on first boot when nothing is cached yet).
+  async function geocode(name) {
+    if (cache[name]) return cache[name];
+    let lastError = "no result";
+    for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
+      for (const provider of PROVIDERS) {
+        try {
+          const hit = await provider(name);
+          if (hit) {
+            cache[name] = hit;
+            saveCache();
+            return hit;
+          }
+        } catch (e) {
+          lastError = e.message;
+          await sleep(2000 * (attempt + 1));
+        }
+      }
+    }
+    throw new Error(`Geocode failed for "${name}": ${lastError}`);
   }
 
   // Mutates each group: sets .coords, .type, and .feature (for regions).
@@ -76,12 +111,12 @@ window.WallMapGeocode = (() => {
     let done = 0;
     for (const g of pending) {
       try {
-        g.coords = (await nominatim(g.place)).coords;
+        g.coords = (await geocode(g.place)).coords;
       } catch (e) {
         g.error = e.message;
         console.warn(e);
       }
-      onProgress?.(++done, pending.length);
+      onProgress?.(++done, pending.length, g);
     }
     return groups;
   }

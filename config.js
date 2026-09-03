@@ -26,7 +26,7 @@ window.WALL_MAP_CONFIG = {
   maxRadius: 12,
 
   // Show city names next to dots.
-  showLabels: true,
+  showLabels: false,
 
   // Shade the whole US state / country a pale flat tint once it has any visit.
   fillRegions: true,
