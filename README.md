@@ -42,7 +42,7 @@ people: {
 ```
 
 Visual encodings live in the same file: `halfLifeDays` (opacity = recency),
-`minRadius`/`maxRadius` (size = visit count), `showLabels`, `fillRegions`,
+`minRadius`/`maxRadius` (size = visit count), `showLabels`, `fillRegions`/`regionOpacity` (pale tint of the whole state/country once visited),
 `tickerSeconds`, `projection`. Any value can be overridden in the URL for
 experimenting, e.g. `?projection=orthographic&halfLifeDays=365`.
 
