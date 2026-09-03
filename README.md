@@ -63,7 +63,7 @@ Tested target: Raspberry Pi 3 Model B+ (1 GB), Raspberry Pi OS Desktop 64-bit.
    curl -fsSL https://raw.githubusercontent.com/benjaminwalker-se/wall-map/main/pi/setup.sh | bash -s -- https://<user>.github.io/wall-map/
    ```
 3. It installs Chromium, autostarts it fullscreen at the URL, disables screen blanking,
-   hides the cursor, reloads nightly and reboots weekly.
+   and reboots nightly at 05:00 (also picks up app updates). Works on X11 and Wayland (labwc).
 
 If the Pi 3 feels sluggish: set `showLabels: false`, `tickerSeconds: 0`, and keep
 `projection` at `naturalEarth` (the flat projections are cheapest to render).
